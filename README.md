@@ -1,0 +1,1 @@
+# Vaultwarden-Local-Backup
