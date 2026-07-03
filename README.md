@@ -1,6 +1,6 @@
 # Vaultwarden Local Backup
-⚠️ **Nota de Segurança Importante:** Este guia assume e recomenda estritamente o uso da VPN WireGuard para todo o tráfego de dados. Caso você opte por utilizar um IP público para acessar sua instância da Oracle, desconsidere os passos de configuração do `nmcli` (Seção 1). No entanto, expor publicamente portas de SSH ou instâncias de banco de dados é **altamente desencorajada**.
-
+⚠️ **Nota de Segurança Importante:** Este guia assume e recomenda estritamente o uso da VPN WireGuard para todo o tráfego de dados. Caso você opte por utilizar um IP público para acessar sua instância 
+da Oracle, desconsidere os passos de configuração do `nmcli` (Seção 1). No entanto, expor publicamente portas de SSH ou instâncias de banco de dados é **altamente desencorajada**
 ---
 
 ## 🛠️ Requisitos Prévios
