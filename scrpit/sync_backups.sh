@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # --- CONFIGURAÇÕES ---
-KEY_PATH="/home/seu-user/scripts/ssh-key-2026-03-23.key"
+KEY_PATH="/home/seu-user/scripts/ssh-key-xxxxx.key"
 REMOTE_USER=""
 REMOTE_IP=""
 REMOTE_DIR="/home/ubuntu/backups"
 LOCAL_DEST="/home/seu-user/backups_locais"
-N8N_WEBHOOK_URL="[http://SEU-IP/webhook/backup-vaultwarden](http://SEU-IP:5678/webhook/backup-vaultwarden)"
+N8N_WEBHOOK_URL="http://SEU-IP/webhook/backup-vaultwarden"
 
 # Garante a existência da pasta local
 mkdir -p "$LOCAL_DEST"
