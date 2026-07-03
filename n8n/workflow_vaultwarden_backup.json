@@ -1,0 +1,71 @@
+{
+  "name": "Backups_Vaultwarden",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "=POST",
+        "path": "backup-vaultwarden",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -336,
+        -608
+      ],
+      "id": "b7f760de-70f4-4f55-9439-b1dbcb650782",
+      "name": "Webhook",
+      "webhookId": ""
+    },
+    {
+      "parameters": {
+        "chatId": "SEU_CHAT_ID_AQUI",
+        "text": "=💾 *Relatório de Backup - Vaultwarden* 💾\n\n☁️ *IP do Servidor Oracle:* `{{ $json.headers['cf-connecting-ip'] }}`\n🛡️ *IP da Cloudflare:* `{{ $json.headers['x-real-ip'] }}`\n\n🔹 *Status:* {{ $json.body.status == \"sucesso\" ? \"✅ Sucesso\" : \"❌ Erro\" }}\n📅 *Arquivo Criado:* `{{ $json.body.arquivo_criado }}`\n🗑️ *Arquivo Excluído:* `{{ $json.body.arquivo_excluido }}`\n\n📝 _Note:_ {{ $json.body.mensagem }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        -464
+      ],
+      "id": "9e2db7bc-731e-42ab-94f9-d7b2278da2da",
+      "name": "Send a text message",
+      "webhookId": "",
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": ""
+  },
+  "nodeGroups": [],
+  "id": "ET3pzvBAQtVrAEmW",
+  "tags": []
+}
