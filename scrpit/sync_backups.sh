@@ -60,4 +60,3 @@ curl -X POST "\$N8N_WEBHOOK_URL" \
      }'
 
 echo "=== Processo Finalizado ==="
-Defina as permissões corretas de segurança para a sua chave e para o script:
