@@ -45,7 +45,7 @@ Cole o conteúdo abaixo:
 #!/bin/bash
 
 # --- CONFIGURAÇÕES ---
-KEY_PATH="/home/seu-user/scripts/ssh-key-2026-03-23.key"
+KEY_PATH="/home/seu-user/scripts/ssh-key-xxxx.key"
 REMOTE_USER=""
 REMOTE_IP=""
 REMOTE_DIR="/home/ubuntu/backups"
@@ -110,7 +110,7 @@ Defina as permissões corretas de segurança para a sua chave e para o script:
  ---
 ```bash
 chmod +x /home/seu-user/scripts/sync_backups.sh
-chmod 600 /home/seu-user/scripts/ssh-key-2026-03-23.key
+chmod 600 /home/seu-user/scripts/ssh-key-xxxx.key
 
 ```
 ##
