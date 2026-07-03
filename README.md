@@ -35,9 +35,10 @@ nmcli connection modify "oracle" connection.autoconnect-priority -10
 ## 2. O Script de Sincronização (sync_backups.sh)
 Crie o diretório de scripts no seu usuário local e configure o arquivo:
 
-Bash
+```Bash
 mkdir -p /home/seu-user/scripts
 nano /home/seu-user/scripts/sync_backups.sh
+```
 Cole o conteúdo abaixo:
 
 ```bash
