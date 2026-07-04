@@ -136,7 +136,7 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/home/luk-dev/scripts/sync_backups.sh
+ExecStart=/home/seu-user/scripts/sync_backups.sh
 RemainAfterExit=yes
 
 [Install]
