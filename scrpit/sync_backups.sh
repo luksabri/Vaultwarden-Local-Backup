@@ -2,7 +2,7 @@
 
 # --- CONFIGURAÇÕES ---
 KEY_PATH="/home/seu-user/scripts/ssh-key-xxxxx.key"
-REMOTE_USER=""
+REMOTE_USER="seu-user"
 REMOTE_IP=""
 REMOTE_DIR="/home/ubuntu/backups"
 LOCAL_DEST="/home/seu-user/backups_locais"
