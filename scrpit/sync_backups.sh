@@ -3,7 +3,7 @@
 # --- CONFIGURAÇÕES ---
 KEY_PATH="/home/seu-user/scripts/ssh-key-xxxxx.key"
 REMOTE_USER="seu-user"
-REMOTE_IP=""
+REMOTE_IP="seu-ip"
 REMOTE_DIR="/home/ubuntu/backups"
 LOCAL_DEST="/home/seu-user/backups_locais"
 N8N_WEBHOOK_URL="http://SEU-IP/webhook/backup-vaultwarden"
