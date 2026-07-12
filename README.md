@@ -45,66 +45,81 @@ Cole o conteúdo abaixo:
 #!/bin/bash
 
 # --- CONFIGURAÇÕES ---
-KEY_PATH="/home/seu-user/scripts/ssh-key-xxxx.key"
-REMOTE_USER=""
-REMOTE_IP=""
+KEY_PATH="/home/seu-user/scripts/ssh-key-xxxxx.key"
+REMOTE_USER="seu-user"
+REMOTE_IP="seu-ip"
 REMOTE_DIR="/home/ubuntu/backups"
 LOCAL_DEST="/home/seu-user/backups_locais"
-N8N_WEBHOOK_URL="[http://SEU-IP/webhook/backup-vaultwarden](http://SEU-IP:5678/webhook/backup-vaultwarden)"
+N8N_WEBHOOK_URL="http://SEU-IP/webhook/backup-vaultwarden"
 
-# Garante a existência da pasta local
+# Garante que a pasta local existe
 mkdir -p "$LOCAL_DEST"
 
 echo "=== Iniciando Verificação de Boot ==="
 
-# Aguarda até 2 minutos para o túnel Wireguard responder ao ping interno
+# 1. Aguarda até 120 segundos para a VPN WireGuard conectar e responder ao ping interno
 MAX_TENTATIVAS=24
 CONTADOR=0
 VPN_ONLINE=false
 
-while [ \$CONTADOR -lt \$MAX_TENTATIVAS ]; do
-    if ping -c 1 -W 2 \$REMOTE_IP > /dev/null 2>&1; then
-        echo "Conexão com a rede interna da Oracle estabelecida!"
+echo "Aguardando túnel Wireguard responder em $REMOTE_IP..."
+while [ $CONTADOR -lt $MAX_TENTATIVAS ]; do
+    if ping -c 1 -W 2 $REMOTE_IP > /dev/null 2>&1; then
+        echo "Conexão com a rede interna da Oracle estabelecida com sucesso!"
         VPN_ONLINE=true
         break
     fi
-    echo "Aguardando VPN oracle conectar... (\$((\$CONTADOR+1))/\$MAX_TENTATIVAS)"
+    echo "Aguardando VPN conectar... (Tentativa $((CONTADOR+1))/$MAX_TENTATIVAS)"
     sleep 5
     ((CONTADOR++))
 done
 
-if [ "\$VPN_ONLINE" = false ]; then
-    echo "Erro: VPN não conectou a tempo."
+# Se a VPN não conectar após o tempo limite, avisa o erro (se houver internet geral) e encerra
+if [ "$VPN_ONLINE" = false ]; then
+    echo "Erro: Tempo limite esgotado. A VPN não ficou online."
+    # Opcional: Enviar webhook de erro para o n8n usando a rede pública se o n8n tiver IP público
     exit 1
 fi
 
+# 2. Executa o download seguro via IP Interno da VPN
 echo "Iniciando cópia segura dos arquivos da Oracle..."
 
-# Executa o SCP usando o ambiente do usuário logado (sem sudo)
-DOWNLOAD_LOG=\$(scp -i "\$KEY_PATH" -o StrictHostKeyChecking=no "\$REMOTE_USER"@"\$REMOTE_IP":"\$REMOTE_DIR"/*.sqlite3 "\$LOCAL_DEST/" 2>&1)
+# Usamos o scp apontando explicitamente para a chave privada
+DOWNLOAD_LOG=$(scp -i "$KEY_PATH" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DIR"/*.tar.gz "$LOCAL_DEST/" 2>&1)
 
-if [ \$? -eq 0 ]; then
+if [ $? -eq 0 ]; then
     STATUS="sucesso"
-    ARQUIVOS_BAIXADOS=\$(ls -A "\$LOCAL_DEST" | grep ".sqlite3" | tr '\\n' ' ')
-    MENSAGEM="Backup sincronizado com sucesso via WireGuard no boot do Debian."
+    # Captura a lista de arquivos baixados na pasta local para enviar no relatório
+    ARQUIVOS_BAIXADOS=$(ls -A "$LOCAL_DEST" | grep ".tar.gz" | tr '\n' ' ')
+    MENSAGEM="Backup sincronizado com sucesso via túnel WireGuard (10.13.13.1) no início do sistema."
+    HOSTNAME=$(hostname)
+
 else
     STATUS="erro"
     ARQUIVOS_BAIXADOS="Nenhum"
-    MENSAGEM="Falha ao transferir arquivos via SCP. Erro: \$DOWNLOAD_LOG"
+    MENSAGEM="Falha ao transferir arquivos via SCP interno. Erro: $DOWNLOAD_LOG"
 fi
 
+# 3. Envia o relatório estruturado para o seu n8n
 echo "Enviando dados para o n8n..."
-curl -X POST "\$N8N_WEBHOOK_URL" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "status": "'"\$STATUS"'",
-       "arquivo_criado": "'"\${ARQUIVOS_BAIXADOS//\\"/'\\\\\\"}"'",
-       "arquivo_excluido": "Nenhum (Sincronização Local)",
-       "mensagem": "'"\${MENSAGEM//\\"/'\\\\\\"}"'"
-     }'
 
-echo "=== Processo Finalizado ==="
-```
+# Criando o JSON de forma limpa, isolada e incluindo a origem automática
+JSON_DATA=$(cat <<EOF
+{
+  "status": "$STATUS",
+  "arquivo_criado": "${ARQUIVOS_BAIXADOS//[$'\t\r\n']}",
+  "arquivo_excluido": "Nenhum (Sincronização Local)",
+  "mensagem": "$MENSAGEM",
+  "origem": "$HOSTNAME"
+}
+EOF
+)
+
+curl -X POST "$N8N_WEBHOOK_URL" \
+     -H "Content-Type: application/json" \
+     -d "$JSON_DATA"
+
+echo "=== Processo Finalizado ==="```
 ---
 Defina as permissões corretas de segurança para a sua chave e para o script:
  ### 
