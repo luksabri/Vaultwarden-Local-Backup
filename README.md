@@ -27,7 +27,36 @@ nmcli connection modify "oracle" connection.autoconnect yes
 # Ajusta a prioridade para o valor negativo (Modo Lazy Loading)
 nmcli connection modify "oracle" connection.autoconnect-priority -10
 ```
+### ---
+1.Criar o script de gatilho:Requer sudo.Crie um arquivo dentro do diretório do dispatcher do NetworkManager usando seu editor favorito (como o nano):
+```Bash
+sudo nano /etc/NetworkManager/dispatcher.d/99-wireguard-oracle.sh
+```
+2.Inserir a lógica de reconexão:Cole o código abaixo.Cole o seguinte código dentro do arquivo. Ele detecta quando qualquer interface de rede (como o Wi-Fi) fica "up" (ativa) e força o reinício da conexão "oracle":
 
+```Bash
+#!/bin/bash
+
+INTERFACE=$1
+ACTION=$2
+
+# Quando qualquer interface de rede subir
+if [ "$ACTION" = "up" ]; then
+    # Ignora se for a própria interface da VPN para evitar loop infinito
+    if [ "$INTERFACE" != "oracle" ]; then
+        # Aguarda 2 segundos para o IP local estabilizar
+        sleep 2
+        # Derruba e sobe a conexão para renovar os endpoints e rotas
+        nmcli connection down "oracle" >/dev/null 2>&1
+        nmcli connection up "oracle" >/dev/null 2>&1
+    fi
+fi
+```
+Salve o arquivo (no nano: Ctrl+O, Enter e depois Ctrl+X para sair).3.Dar permissão de execução:Passo obrigatório.O NetworkManager só executa scripts nesse diretório se eles forem estritamente propriedade do root e tiverem permissão de execução:
+```Bash
+sudo chmod +x /etc/NetworkManager/dispatcher.d/99-wireguard-oracle.sh
+sudo chown root:root /etc/NetworkManager/dispatcher.d/99-wireguard-oracle.sh
+```
 
 ---
 
