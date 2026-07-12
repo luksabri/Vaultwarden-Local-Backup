@@ -27,7 +27,7 @@ nmcli connection modify "oracle" connection.autoconnect yes
 # Ajusta a prioridade para o valor negativo (Modo Lazy Loading)
 nmcli connection modify "oracle" connection.autoconnect-priority -10
 ```
-### ---
+ ---
 1.Criar o script de gatilho:Requer sudo.Crie um arquivo dentro do diretório do dispatcher do NetworkManager usando seu editor favorito (como o nano):
 ```Bash
 sudo nano /etc/NetworkManager/dispatcher.d/99-wireguard-oracle.sh
