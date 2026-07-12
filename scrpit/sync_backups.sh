@@ -33,7 +33,6 @@ done
 # Se a VPN não conectar após o tempo limite, avisa o erro (se houver internet geral) e encerra
 if [ "$VPN_ONLINE" = false ]; then
     echo "Erro: Tempo limite esgotado. A VPN não ficou online."
-    # Opcional: Enviar webhook de erro para o n8n usando a rede pública se o n8n tiver IP público
     exit 1
 fi
 
@@ -43,12 +42,36 @@ echo "Iniciando cópia segura dos arquivos da Oracle..."
 # Usamos o scp apontando explicitamente para a chave privada
 DOWNLOAD_LOG=$(scp -i "$KEY_PATH" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$REMOTE_IP":"$REMOTE_DIR"/*.tar.gz "$LOCAL_DEST/" 2>&1)
 
+ARQUIVOS_EXCLUIDOS="Nenhum"
+
 if [ $? -eq 0 ]; then
     STATUS="sucesso"
     # Captura a lista de arquivos baixados na pasta local para enviar no relatório
     ARQUIVOS_BAIXADOS=$(ls -A "$LOCAL_DEST" | grep ".tar.gz" | tr '\n' ' ')
     MENSAGEM="Backup sincronizado com sucesso via túnel WireGuard (10.13.13.1) no início do sistema."
     HOSTNAME=$(hostname)
+
+    # --- NOVA LOGICA: MANTER APENAS OS 10 MAIS RECENTES ---
+    echo "Verificando limite de 10 arquivos em $LOCAL_DEST..."
+    cd "$LOCAL_DEST" || exit
+    
+    # Conta quantos arquivos .tar.gz existem
+    TOTAL_ARQUIVOS=$(ls -1 *.tar.gz 2>/dev/null | wc -l)
+    
+    if [ "$TOTAL_ARQUIVOS" -gt 10 ]; then
+        echo "Total de arquivos ($TOTAL_ARQUIVOS) excede o limite de 10. Removendo os mais antigos..."
+        
+        # Lista os arquivos ordenados por data (mais novos primeiro)
+        # O tail -n +11 pega tudo do 11º arquivo em diante para apagar
+        ARQUIVOS_PARA_DELETAR=$(ls -t *.tar.gz | tail -n +11)
+        
+        # Salva o nome dos arquivos que serão excluídos para enviar pro n8n
+        ARQUIVOS_EXCLUIDOS=$(echo "$ARQUIVOS_PARA_DELETAR" | tr '\n' ' ')
+        
+        # Apaga os arquivos antigos
+        echo "$ARQUIVOS_PARA_DELETAR" | xargs rm -f
+        echo "Arquivos removidos: $ARQUIVOS_EXCLUIDOS"
+    fi
 
 else
     STATUS="erro"
@@ -64,7 +87,7 @@ JSON_DATA=$(cat <<EOF
 {
   "status": "$STATUS",
   "arquivo_criado": "${ARQUIVOS_BAIXADOS//[$'\t\r\n']}",
-  "arquivo_excluido": "Nenhum (Sincronização Local)",
+  "arquivo_excluido": "${ARQUIVOS_EXCLUIDOS//[$'\t\r\n']}",
   "mensagem": "$MENSAGEM",
   "origem": "$HOSTNAME"
 }
